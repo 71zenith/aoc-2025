@@ -1,10 +1,12 @@
-package day{{.Day}}
+package main
 
 import (
 	"fmt"
 	"strings"
 	"aoc/utils"
 )
+
+const DAY = {{.Day}}
 
 func Part1(input string) int {
 	lines := strings.Split(input, "\n")
@@ -23,7 +25,7 @@ func Part2(input string) int {
 }
 
 func main() {
-	var input string := utils.loadInput({{.Day}})
+	var input string := utils.LoadInput({{.Day}})
 	fmt.Printf("Part 1: %d\n", Part1(input))
-	fmt.Printf("Part 2: %s\n", Part2(input))
+	fmt.Printf("Part 2: %d\n", Part2(input))
 }
