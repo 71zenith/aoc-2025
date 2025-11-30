@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -10,13 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-	"bytes"
 	"time"
 )
 
 const YEAR = 2024
-const TEMP_MAIN = "tmpl/sol.tmpl"
-const TEMP_TEST = "tmpl/test.tmpl"
 
 func check(err error) {
 	if err != nil {
@@ -28,55 +26,46 @@ func main() {
 	dir, err := os.Executable()
 	check(err)
 	os.Chdir(filepath.Dir(dir))
-	fetchFlag := flag.NewFlagSet("fetch", flag.ExitOnError)
-	dayFetch := fetchFlag.Int("d", 0, "Day")
-
-	tmplFlag := flag.NewFlagSet("tmpl", flag.ExitOnError)
-	dayTmpl := tmplFlag.Int("d", 1, "Day")
-
-	runFlag := flag.NewFlagSet("run", flag.ExitOnError)
-	dayRun := runFlag.Int("d", 1, "Day")
-
-	testFlag := flag.NewFlagSet("test", flag.ExitOnError)
-	dayTest := testFlag.Int("d", 1, "Day")
-	partTest := testFlag.Int("p", 1, "Part")
-
-	benchFlag := flag.NewFlagSet("bench", flag.ExitOnError)
-	dayBench := benchFlag.Int("d", 1, "Day")
-	partBench := benchFlag.Int("p", 1, "Part")
-
-	uploadFlag := flag.NewFlagSet("upload", flag.ExitOnError)
-	dayUpload := uploadFlag.Int("d", 1, "Day")
-	partUpload := uploadFlag.Int("p", 1, "Part")
-	answerUpload := uploadFlag.Int64("a", 1, "Answer")
-
+	dayPtr := flag.CommandLine.Int("d", 0, "Day")
+	partPtr := flag.CommandLine.Int("p", 0, "Part")
+	answerPtr := flag.CommandLine.Int64("a", 0, "Answer")
+	if len(os.Args) == 1 {
+		fmt.Fprintln(os.Stderr, "No args provided.")
+		os.Exit(1)
+	}
+	_ = flag.CommandLine.Parse(os.Args[2:])
+	if *dayPtr == 0 {
+		*dayPtr = dayNow()
+	}
 	switch os.Args[1] {
 	case "fetch":
-		fetchFlag.Parse(os.Args[2:])
-		session, err := readSession()
-		check(err)
-		if (*dayFetch == 0) {
-			*dayFetch = dayNow()
-		}
-		input := fetch(YEAR, *dayFetch, session)
-		write(*dayFetch, input)
+		session := readSession()
+		input := fetch(YEAR, *dayPtr, session)
+		write(*dayPtr, input)
 	case "tmpl":
-		tmplFlag.Parse(os.Args[2:])
-		tmpl(*dayTmpl)
+		tmpl(*dayPtr)
 	case "run":
-		runFlag.Parse(os.Args[2:])
-		run(*dayRun)
+		run(*dayPtr)
 	case "test":
-		testFlag.Parse(os.Args[2:])
-		test(*dayTest, *partTest)
+		if *partPtr == 0 {
+			test(*dayPtr, 1)
+			test(*dayPtr, 2)
+			return
+		}
+		test(*dayPtr, *partPtr)
 	case "bench":
-		benchFlag.Parse(os.Args[2:])
-		bench(*dayBench, *partBench)
+		if *partPtr == 0 {
+			bench(*dayPtr, 1)
+			bench(*dayPtr, 2)
+			return
+		}
+		bench(*dayPtr, *partPtr)
 	case "upload":
-		uploadFlag.Parse(os.Args[2:])
-		session, err := readSession()
-		check(err)
-		upload(*dayUpload, *partUpload, *answerUpload, session)
+		session := readSession()
+		upload(*dayPtr, *partPtr, *answerPtr, session)
+	default:
+		fmt.Fprintln(os.Stderr, "Not IMPLEMENTED")
+		os.Exit(1)
 	}
 }
 
@@ -86,9 +75,10 @@ func dayNow() int {
 	return date
 }
 
-func readSession() (string, error) {
+func readSession() string {
 	dat, err := os.ReadFile(".session")
-	return string(dat), err
+	check(err)
+	return string(dat)
 }
 
 func fetch(year int, day int, session string) []byte {
@@ -106,7 +96,7 @@ func fetch(year int, day int, session string) []byte {
 }
 
 func write(day int, input []byte) {
-	fileDir := fmt.Sprintf("input/day%d/", day)
+	fileDir := fmt.Sprintf("./input/day%d/", day)
 	err := os.MkdirAll(fileDir, 0755)
 	check(err)
 	err = os.WriteFile(string(fileDir+"input"), bytes.TrimSuffix(input, []byte("\n")), 0644)
@@ -114,12 +104,12 @@ func write(day int, input []byte) {
 }
 
 func tmpl(day int) {
-	fileDir := fmt.Sprintf("src/day%d/", day)
+	fileDir := fmt.Sprintf("./src/day%d/", day)
 	err := os.MkdirAll(fileDir, 0755)
 	check(err)
-	test_tmpl, err := template.ParseFiles(TEMP_TEST)
+	test_tmpl, err := template.ParseFiles("tmpl/test.tmpl")
 	check(err)
-	main_tmpl, err := template.ParseFiles(TEMP_MAIN)
+	main_tmpl, err := template.ParseFiles("tmpl/sol.tmpl")
 	check(err)
 	test_file, err := os.Create(fileDir + "main_test.go")
 	check(err)
@@ -139,7 +129,7 @@ func run(day int) {
 }
 
 func test(day int, part int) {
-	cmd := exec.Command("go", "test", fmt.Sprintf("./src/day%d", day), "-v", "-run", fmt.Sprintf("TestPart%d", part))
+	cmd := exec.Command("go", "test", fmt.Sprintf("-run=TestPart%d", part), "-v", fmt.Sprintf("./src/day%d", day))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()

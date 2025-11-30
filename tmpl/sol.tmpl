@@ -8,24 +8,40 @@ import (
 
 const DAY = {{.Day}}
 
+func P(a ...any) { fmt.Println(a...) }
+func Pf(a string, b ...any) { fmt.Printf(a, b...) }
+
+func check(err error) {
+	if (err != nil) {
+		panic(err)
+	}
+}
+
 func Part1(input string) int {
 	lines := strings.Split(input, "\n")
 	
 	// SOLUTION
+
+	var result int = 0
 	
 	return result
 }
 
 func Part2(input string) int {
-	lines := strings.Split(input, "\n")
+	// lines := strings.Split(input, "\n")
 	
 	// SOLUTION
+
+	var result int = 0
 	
 	return result
 }
 
 func main() {
-	var input string := utils.LoadInput({{.Day}})
-	fmt.Printf("Part 1: %d\n", Part1(input))
-	fmt.Printf("Part 2: %d\n", Part2(input))
+	input = utils.LoadInput({{.Day}})
+	Pf("Part 1: %d\n", Part1(input))
+	Pf("Part 2: %d\n", Part2(input))
 }
+
+var input string = `
+`
