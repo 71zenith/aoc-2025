@@ -367,3 +367,23 @@ func BFS(grid Grid, start, end Point, block byte) int {
 	}
 	return -1
 }
+
+func Mod(a, b int) int {
+    m := a % b
+    if m < 0 {
+        m += b
+    }
+    return m
+}
+
+
+func Floor(a float64) int {
+	if a >= 0 {
+		return int(a)
+	}
+	i := int(a)
+	if float64(i) == a {
+		return i
+	}
+	return i - 1
+}

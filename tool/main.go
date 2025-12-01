@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const YEAR = 2024
+const YEAR = 2025
 
 func check(err error) {
 	if err != nil {

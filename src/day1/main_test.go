@@ -1,0 +1,32 @@
+package main
+
+import (
+	"testing"
+    "aoc/utils"
+)
+
+func TestPart1(t *testing.T) {
+	result := Part1(input)
+    t.Logf("Result: %v", result)
+}
+
+func TestPart2(t *testing.T) {
+	result := Part2(input)
+    t.Logf("Result: %v", result)
+}
+
+func BenchmarkPart1(b *testing.B) {
+    input = utils.LoadInput(1)
+    b.ResetTimer()
+	for b.Loop() {
+		Part1(input)
+	}
+}
+
+func BenchmarkPart2(b *testing.B) {
+    input = utils.LoadInput(1)
+    b.ResetTimer()
+	for b.Loop() {
+		Part2(input)
+	}
+}
