@@ -70,7 +70,8 @@ func main() {
 }
 
 func dayNow() int {
-	now := time.Now()
+	loc, _ := time.LoadLocation("America/Bogota") // 12am is when new puzzle releases
+	now := time.Now().In(loc)
 	_, _, date := now.Date()
 	return date
 }
