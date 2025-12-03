@@ -4,6 +4,8 @@ import (
 	"aoc/utils"
 	"fmt"
 	"strings"
+	"sync"
+	"sync/atomic"
 )
 
 const DAY = 3
@@ -25,17 +27,23 @@ func Max(s string) int {
 	return max
 }
 
-func Part1(input string) int {
+func Part1(input string) int32 {
 	lines := strings.SplitSeq(input, "\n")
 
 	// SOLUTION
-	var result int = 0
+	var result int32 = 0
+	var wg sync.WaitGroup
 
 	for line := range lines {
-		f := Max(line[:len(line)-1])
-		s := f + 1 + Max(line[f+1:])
-		result += Int(line[f])*10 + Int(line[s])
+		wg.Add(1)
+		go func(line string) {
+			defer wg.Done()
+			f := Max(line[:len(line)-1])
+			s := f + 1 + Max(line[f+1:])
+			atomic.AddInt32(&result, int32(Int(line[f])*10 + Int(line[s])))
+		}(line)
 	}
+	wg.Wait()
 	return result
 }
 
@@ -44,21 +52,26 @@ func Part2(input string) int64 {
 
 	// SOLUTION
 	var result int64 = 0
+	var wg sync.WaitGroup
 
 	for line := range lines {
-		local := 0
-		bat := 12
-		max := -1
-		for i := range bat {
-			if (len(line) - bat + 1 + i) > len(line) {
-				break
+		wg.Add(1)
+		go func(line string) {
+			defer wg.Done()
+			local := 0
+			bat := 12
+			max := -1
+			for i := range bat {
+				if (len(line) - bat + 1 + i) > len(line) {
+					break
+				}
+				max = max + 1 + Max(line[max+1:len(line)-bat+i+1])
+				local = local*10 + Int(line[max])
 			}
-			max = max + 1 + Max(line[max+1:len(line)-bat+i+1])
-			local = local*10 + Int(line[max])
-		}
-		result += int64(local)
+			atomic.AddInt64(&result, int64(local))
+		}(line)
 	}
-
+	wg.Wait()
 	return result
 }
 
