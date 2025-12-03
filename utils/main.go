@@ -45,7 +45,7 @@ func ParseIntLines(input string) []int {
 
 type Grid [][]byte
 
-func ParseGrid(input string) [][]byte {
+func ParseGrid(input string) Grid {
 	lines := strings.Split(input, "\n")
 	grid := make([][]byte, len(lines))
 	for i, line := range lines {
@@ -55,19 +55,19 @@ func ParseGrid(input string) [][]byte {
 }
 
 type Point struct {
-	x int
-	y int
+	X int
+	Y int
 }
 
 func (p Point) Add(q Point) Point {
-	return Point{p.x + q.x, p.y + q.y}
+	return Point{p.X + q.X, p.Y + q.Y}
 }
 
 var (
-	N      = Point{0, -1}
-	S      = Point{0, 1}
-	W      = Point{-1, 0}
-	E      = Point{1, 0}
+	N      = Point{-1, 0}
+	S      = Point{1, 0}
+	W      = Point{0, -1}
+	E      = Point{0, 1}
 	Direc4 = []Point{N, S, W, E}
 	NW     = N.Add(W)
 	NE     = N.Add(E)
@@ -86,15 +86,26 @@ const (
 )
 
 func (g Grid) InBounds(p Point) bool {
-	return p.y >= 0 && p.y < len(g) && p.x >= 0 && p.x < len(g[p.y])
+	return p.X >= 0 && p.X < len(g) && p.Y >= 0 && p.Y < len(g[p.X])
 }
 
 func (g Grid) At(p Point) byte {
-	return g[p.x][p.y]
+	return g[p.X][p.Y]
 }
 
 func (g Grid) Set(p Point, val byte) {
-	g[p.x][p.y] = val
+	g[p.X][p.Y] = val
+}
+
+func (g Grid) Find(symbol byte) Point {
+	for x := range(g) {
+		for y := range(g[x]) {
+			if g.At(Point{x,y}) == symbol {
+				return Point{x,y}
+			}
+		}
+	}
+	return Point{-1,-1}
 }
 
 func (g Grid) Neighbors4(p Point) []Point {
