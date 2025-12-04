@@ -108,6 +108,16 @@ func (g Grid) Find(symbol byte) Point {
 	return Point{-1,-1}
 }
 
+func (g Grid) FindAll(symbol byte, list *ArrayList[Point]) {
+	for x := range(g) {
+		for y := range(g[x]) {
+			if g.At(Point{x,y}) == symbol {
+				list.Add(Point{x,y})
+			}
+		}
+	}
+}
+
 func (g Grid) Neighbors4(p Point) []Point {
 	var neighbors []Point
 	for _, dir := range Direc4 {
@@ -129,6 +139,18 @@ func (g Grid) Neighbors8(p Point) []Point {
 	}
 	return neighbors
 }
+
+func (g Grid) NeighborCount(p Point, sym byte) int {
+	count := 0
+	for _, dir := range Direc8 {
+		neighbor := p.Add(dir)
+		if g.InBounds(neighbor) && g.At(neighbor) == sym {
+			count += 1
+		}
+	}
+	return count
+}
+
 
 type Queue[T any] []T
 
@@ -343,6 +365,10 @@ func (arr *ArrayList[T]) Remove(index int) T {
 
 func (arr ArrayList[T]) Size() int {
 	return len(arr)
+}
+
+func (arr *ArrayList[T]) Clear() {
+	*arr = (*arr)[:0]
 }
 
 func (arr *ArrayList[T]) Pop() T {
